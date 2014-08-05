@@ -10,15 +10,43 @@ requirejs(['ext_editor_1', 'jquery_190', 'raphael_210'],
 
         ext.set_process_in(function (this_e, data) {
             cur_slide["in"] = data[0];
+            console.log("inside set_process_in", data);
+            this_e.addAnimationSlide(cur_slide);
         });
 
         ext.set_process_out(function (this_e, data) {
             cur_slide["out"] = data[0];
+            console.log("inside set_process_out", data);
         });
 
         ext.set_process_ext(function (this_e, data) {
             cur_slide.ext = data;
-            this_e.addAnimationSlide(cur_slide);
+            console.log("inside set_process_ext", data);
+            var $content = cur_slide.content;
+
+            var checkioInput = cur_slide.in;
+            var rightResult = data["answer"];
+            var userResult = cur_slide.out;
+            var result = data["result"];
+            var result_addon = data["result_addon"];
+
+
+            //if you need additional info from tests (if exists)
+            var explanation = data["explanation"];
+
+            $content.find('.output').html('&nbsp;Your result:&nbsp;' + ext.JSON.encode(userResult));
+
+            if (!result) {
+                $content.find('.call').html('Fail: checkio(' + ext.JSON.encode(checkioInput) + ')');
+                $content.find('.answer').html('Right result:&nbsp;' + ext.JSON.encode(rightResult));
+                $content.find('.answer').addClass('error');
+                $content.find('.output').addClass('error');
+                $content.find('.call').addClass('error');
+            }
+            else {
+                $content.find('.call').html('Pass: checkio(' + ext.JSON.encode(checkioInput) + ')');
+                $content.find('.answer').remove();
+            }
             cur_slide = {};
         });
 
@@ -35,6 +63,9 @@ requirejs(['ext_editor_1', 'jquery_190', 'raphael_210'],
 
         ext.set_animate_slide(function (this_e, data, options) {
             var $content = $(this_e.setHtmlSlide(ext.get_template('animation'))).find('.animation-content');
+
+            cur_slide.content = $content;
+
             if (!data) {
                 console.log("data is undefined");
                 return false;
@@ -52,28 +83,10 @@ requirejs(['ext_editor_1', 'jquery_190', 'raphael_210'],
             }
 
             var checkioInput = data.in;
-            var rightResult = data.ext["answer"];
-            var userResult = data.out;
-            var result = data.ext["result"];
-            var result_addon = data.ext["result_addon"];
+            $content.find('.call').html('checkio(' + ext.JSON.encode(checkioInput) + ')');
+            $content.find('.answer').html('Working');
 
 
-            //if you need additional info from tests (if exists)
-            var explanation = data.ext["explanation"];
-
-            $content.find('.output').html('&nbsp;Your result:&nbsp;' + ext.JSON.encode(userResult));
-
-            if (!result) {
-                $content.find('.call').html('Fail: checkio(' + ext.JSON.encode(checkioInput) + ')');
-                $content.find('.answer').html('Right result:&nbsp;' + ext.JSON.encode(rightResult));
-                $content.find('.answer').addClass('error');
-                $content.find('.output').addClass('error');
-                $content.find('.call').addClass('error');
-            }
-            else {
-                $content.find('.call').html('Pass: checkio(' + ext.JSON.encode(checkioInput) + ')');
-                $content.find('.answer').remove();
-            }
             //Dont change the code before it
 
             //Your code here about test explanation animation
